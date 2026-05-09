@@ -59,12 +59,22 @@ Project 2: LINUX OS, Signals, Processes, and Inter Process Communication}
 
 \section*{Contributions}
 \begin{center}
-\begin{tabular}{@{}l p{4cm} p{6.5cm}@{}}
+\begin{tabular}{@{}l p{4.5cm} p{6.5cm}@{}}
 \toprule
 Member & Parts worked on & Short notes \\
 \midrule
-Student A & Problem 1, datagen, Makefile & Tree layout, pipes, signals \\
-Student B & Problem 2 (Part 1, Q1, Q2, Q3) & Fork children, signal masks, report \\
+Partha Pediredla & Project 1 Part 1 fixes, \texttt{datagen.c}, \texttt{project1.c} &
+  Two-level tree, \texttt{read\_all}/\texttt{write\_all} loops, hidden-key
+  aggregation, exit arg via pipe \\
+Shiv Patel & Problem 1 (\texttt{project2\_p1.c}), Makefile &
+  Worker \texttt{SIGTSTP} pause, leader decision logic, Rule 1/2/3 signal flow
+  and termination prints \\
+Philip Guan & Problem 2 Part 1 (\texttt{project2\_p2.c}), Q1 and Q2 write-ups &
+  Four forked children, \texttt{sigaction}/\texttt{SA\_SIGINFO} handlers,
+  child--parent signaling tests \\
+Ved Patel & Problem 2 Q3 (\texttt{project2\_p2\_q3.c}), report and screenshots &
+  Split signal masks, pending-queue inspection with \texttt{sigpending} and
+  \texttt{sigtimedwait}/\texttt{sigwait}, LaTeX layout \\
 \bottomrule
 \end{tabular}
 \end{center}
