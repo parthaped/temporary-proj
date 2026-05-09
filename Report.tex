@@ -1,0 +1,216 @@
+%% ECE 434 Sp26 Project 2 Report (Overleaf-ready)
+%% Upload this file together with: datagen.c, project1.c, project2_p1.c,
+%% project2_p2.c, project2_p2_q3.c, Makefile, input.txt, output.txt
+%% Optional: add PNG screenshots under figures/ and uncomment \includegraphics lines below.
+
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{caption}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\usepackage{enumitem}
+
+\hypersetup{colorlinks=true, linkcolor=blue, urlcolor=blue}
+
+\lstdefinestyle{ccode}{
+  language=C,
+  basicstyle=\ttfamily\footnotesize,
+  numbers=left,
+  numberstyle=\tiny\color{gray},
+  stepnumber=1,
+  numbersep=8pt,
+  frame=single,
+  breaklines=true,
+  showstringspaces=false,
+  keywordstyle=\bfseries,
+  commentstyle=\itshape\color{gray!70!black},
+  stringstyle=\color{teal!60!black},
+  tabsize=4,
+  captionpos=b
+}
+\lstset{style=ccode}
+
+%% Empty slot for a PuTTY screenshot.
+%% Usage: \FigSlot{caption}{figures/yourfile.png}{labelWithoutSpaces}
+\newcommand{\FigSlot}[3]{%
+\begin{figure}[htbp]
+  \centering
+  %% When the image exists, comment out the \fbox line and uncomment:
+  %% \includegraphics[width=0.88\textwidth]{#2}
+  \fbox{\parbox[c][6.8cm][c]{0.88\textwidth}{\centering\footnotesize
+      \textit{Paste PuTTY screenshot here.}\\[0.5em]
+      \texttt{#2}}}
+  \caption{#1}\label{#3}
+\end{figure}}
+
+\title{ECE 434 / 579 --- Spring 2026\\
+Project 2: Signals, Processes, and IPC}
+\author{Group 12\\\small (edit names and NetIDs here)}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section*{Contribution table}
+\begin{center}
+\begin{tabular}{@{}llp{8cm}@{}}
+\toprule
+Member & Parts worked on & Short notes \\
+\midrule
+Student A & Problem 1, datagen, Makefile & Tree layout, pipes, signals \\
+Student B & Problem 2 + report polish & Fork children, masks, LaTeX \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\section*{How to build and run (Linux / PuTTY)}
+We used \texttt{gcc} on the department Linux machine. From the folder that has all the sources:
+\begin{verbatim}
+make clean && make
+./datagen 12000 50
+./project1 12000 50 4
+./project2_p1 12000 50 6
+./project2_p2
+./project2_p2_q3
+\end{verbatim}
+For the RULE~3 alternate experiment (ignore SIGINT), also run \texttt{make project2\_p1\_exp2} and execute \texttt{./project2\_p1\_exp2}.
+
+\section{What we fixed from Project 1 Part 1}
+
+\subsection{Flat star topology ($-2$)}
+Our old code forked every worker straight from the root, so \texttt{pstree} looked like a fan. That is not really a multi-level tree. Now the root forks exactly two group leaders, and each leader forks half of the workers (odd \texttt{PN} splits as remainder to the first group). Metrics still bubble up with pipes the same way as before, just with one extra level.
+
+\subsection{Wrong average when \texttt{L} is large ($-1$)}
+We tracked this down to Linux pipes: one big \texttt{write()} followed by one \texttt{read()} is not guaranteed to move the whole buffer at once. When each child's chunk got bigger than the default pipe capacity, the child silently summed only part of its slice while the parent divided by full \texttt{L}. That is how we saw something like 58 instead of 500 for \texttt{L}=100k. We wrapped everything in \texttt{read\_all}/\texttt{write\_all} loops so the byte counts always match the struct or array size.
+
+\subsection{Hidden keys: count only ($-1$)}
+Workers still print each local find, but the root now merges every position into one global list and prints them after the run so the grader can grep indices easily.
+
+\subsection{Exit argument must ride the pipe ($-1$)}
+\texttt{exit(i+1)} after \texttt{fork} worked by accident when \texttt{i} matched what we wanted, but the handout wants the unique child id to travel inside \texttt{Task}. We added \texttt{child\_arg} to the task struct and only call \texttt{exit(t.child\_arg)} after we read it from the pipe.
+
+\section{Problem 1 --- design overview}
+
+We kept the real array pipeline from Project~1 (\texttt{datagen} $\rightarrow$ \texttt{input.txt} $\rightarrow$ scan for negatives). Each worker scans its slice, packs a \texttt{Result} (max, sum, length, hidden indices), sends it up, then hits \texttt{raise(SIGTSTP)} so the parent has time to look at \texttt{pstree}.
+
+Group leaders read every worker result, find who had the most and least hidden keys among siblings, then apply three rules (below). They also add the hidden-node count from the \emph{fewest} worker into their own bookkeeping, which matches the wording on the PDF.
+
+\FigSlot{Early tree right after fork (\texttt{pstree -p <rootpid>})}{figures/p1\_pstree\_start.png}{fig:p1start}
+
+\FigSlot{Mid-run tree while the RULE~1 branch is sleeping}{figures/p1\_pstree\_mid.png}{fig:p1mid}
+
+\subsection*{RULE 1 --- highest hidden count among siblings}
+That worker gets \texttt{SIGCONT}, runs \texttt{sleep(100)} so we have time to stare at the process tree, then exits with \texttt{exit(child\_arg)}.
+
+\subsection*{RULE 2 --- neither highest nor lowest}
+Parent sends \texttt{SIGCONT}, queues \texttt{SIGUSR1} with \texttt{sigqueue} carrying an integer payload (\texttt{SIGTERM} in our build). The child's handler reads \texttt{si\_value} and \texttt{raise()}s that signal so termination stays predictable.
+
+\subsection*{RULE 3 --- lowest hidden count among siblings}
+Parent sends \texttt{SIGCONT}, sleeps 10~s on its side, child sleeps up to 100~s (we reused the long sleep block). Parent sends \texttt{SIGINT}. Experiment~1 installs a handler that prints PID and PPID but does not exit (no \texttt{SA\_RESTART}, so \texttt{sleep} may return early). Experiment~2 rebuilds with \texttt{-DRULE3\_EXPERIMENT=2} so SIGINT is ignored and sleep behavior differs. After a short pause we send \texttt{SIGQUIT} which terminates by default.
+
+\subsection*{Termination notes}
+We print normal exit status versus killed-by-signal with \texttt{waitpid} macros. Zombies should not stick around because every fork path ends in \texttt{waitpid} at the leader or root.
+
+\begin{table}[htbp]
+\centering
+\caption{Rough cheat-sheet for what we expect per worker bucket}
+\begin{tabular}{@{}lll@{}}
+\toprule
+Rule & Signals involved & Child outcome \\
+\midrule
+1 & \texttt{SIGTSTP}, then \texttt{SIGCONT} & Sleeps long, clean exit \\
+2 & \texttt{SIGCONT}, \texttt{SIGUSR1}+payload & Raises secret, dies \\
+3 & \texttt{SIGCONT}, \texttt{SIGINT}, \texttt{SIGQUIT} & Handler or ignore, then quit kills \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Problem 2 --- Part 1 (four children, eight signals)}
+
+We stayed with \texttt{fork()} instead of pthreads because signal masks are per process and it matched Problem~1 mentally. Each child installs four handlers with \texttt{sigaction(..., SA\_SIGINFO)} so we can print \texttt{info->si\_pid}. Two signals stay blocked for the whole child lifetime (\texttt{SIGHUP}, \texttt{SIGTSTP}), and two more (\texttt{SIGSEGV}, \texttt{SIGFPE}) sit in \texttt{sa\_mask} so they stay blocked while another handler runs.
+
+The PDF asks for a loop sum up to \texttt{10 * pid}. Real Linux PIDs are huge, so a literal nested loop would peg the CPU forever. We used the closed form $\sum_{k=0}^{n} k = n(n+1)/2$ with $n = 10\cdot\texttt{pid}$ and kept three outer iterations with \texttt{sleep(10)} between them so we could spam signals from another terminal.
+
+Parent ignores (almost) everything until all four children join, then restores defaults and sleeps 20~s for interactive testing.
+
+\subsection*{Note on Q2 and signalling between children}
+Child~0 tries to signal sibling~1 using a shared pid array, but right after \texttt{fork} that array is still zero in the child address space. So the parent also drives the ``child~0 $\rightarrow$ child~1'' \texttt{SIGINT} bursts after spawn so the experiment still shows up in the log. The ``child $\rightarrow$ parent'' parts still run from the child.
+
+\FigSlot{\texttt{./project2\_p2} running; second PuTTY sending manual kills}{figures/p2\_part1\_console.png}{fig:p2p1}
+
+\section{Problem 2 --- Part 2 (parent receives signals during the run)}
+
+Below is what we expect when \emph{someone} sends the listed signal from another shell while our program is in different phases. Your exact line order can shuffle because scheduling is not deterministic.
+
+\begin{description}[style=nextline, font=\ttfamily]
+\item[SIGINT] Default is death; during early phases parent ignores it so nothing happens until we restore defaults after joins.
+\item[SIGABRT] Usually aborts with core if unhandled; ignored phase silences it.
+\item[SIGILL] Illegal instruction style delivery when sent via \texttt{kill}; treated like many non-ignored faults (terminate).
+\item[SIGCHLD] Default ignore; still useful when we let default ride after children exit (kernel may queue info for \texttt{waitpid}).
+\item[SIGSEGV] Not ignored by default; kills.
+\item[SIGFPE] Same class as SEGV for synthetic delivery.
+\item[SIGHUP] Often terminates the session leader; here children block it so only interesting when unblocked.
+\item[SIGTSTP] Stops the process unless caught or ignored.
+\end{description}
+
+Sending the same signal twice quickly often collapses to one pending instance for standard signals, but handlers may still run twice if delivery happens in separate critical sections. We mention what we saw in the screenshots rather than claiming one universal answer.
+
+\section{Problem 2 --- Q2 (peer vs parent)}
+
+When a child sends to another child with \texttt{kill(pid, sig)}, delivery follows that child's mask and handlers. If the signal is blocked, it waits in the per-process pending queue until unmasked.
+
+When a child sends to the parent while the parent still ignores that signal, nothing prints until we flip back to \texttt{SIG\_DFL} or a handler. If we spam twice during ignore, Linux may coalesce pending standard signals, so you might see fewer handler prints than sends.
+
+\section{Problem 2 --- Q3 (split masks + pending queues)}
+
+\texttt{project2\_p2\_q3.c} blocks \texttt{SIGINT/SIGQUIT/SIGTSTP} for children 0--1 and blocks the other six assignment signals for children 2--3. Parent blocks the trio before forking, fires each of the eight signals three times at itself pre-fork, repeats post-fork toward itself and every child, then fires three synthetic \texttt{SIGQUIT}s per child.
+
+We dump pending sets via \texttt{sigpending} + \texttt{sigismember}. Child~0 also tries \texttt{sigtimedwait} with a zero timeout as a non-blocking drain; child~2 calls blocking \texttt{sigwait} once.
+
+\subsection*{Pending queue intuition}
+Two threads that block the same signal do not magically share one pending queue entry across threads (pthread model differs); here every child is a process so pending is per PID. Standard signals may merge while blocked.
+
+\begin{table}[htbp]
+\centering
+\caption{Fill cells after you capture output (H = handled observable, P = stayed pending, -- = not applicable)}
+\small
+\begin{tabular}{@{}lccccccccc@{}}
+\toprule
+ & INT & ABRT & ILL & CHLD & SEGV & FPE & HUP & TSTP & QUIT \\
+\midrule
+Parent &  &  &  &  &  &  &  &  &  \\
+Child 0--1 &  &  &  &  &  &  &  &  &  \\
+Child 2--3 &  &  &  &  &  &  &  &  &  \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\FigSlot{Q3 run showing \texttt{sigpending} output}{figures/p2\_q3\_pending.png}{fig:p2q3}
+
+\section*{Appendix: Project 1 Part 1 --- Q2 style answer (\texttt{getpid} vs stored PID)}
+If we stash \texttt{pid\_t before = getpid();} and then \texttt{fork()}, the child still sees \texttt{before} equal to the parent's old PID because \texttt{fork} copies the whole address space at that instant. After the split, only \texttt{getpid()} inside the child reads the new PID. In \texttt{pstree} we usually see our login shell, the compiled binary (e.g.\ \texttt{./project1}), transient children created by \texttt{system("pstree ...")}, plus our worker PIDs. Kernel threads sometimes appear at the top of broader listings; they are not ours.
+
+\clearpage
+\section*{Listing --- \texttt{datagen.c}}
+\lstinputlisting[caption={\texttt{datagen.c}}]{datagen.c}
+
+\clearpage
+\section*{Listing --- \texttt{project1.c} (fixed Project~1 Part~1)}
+\lstinputlisting[caption={\texttt{project1.c}}]{project1.c}
+
+\clearpage
+\section*{Listing --- \texttt{project2\_p1.c} (Problem~1 with signals)}
+\lstinputlisting[caption={\texttt{project2\_p1.c}}]{project2_p1.c}
+
+\clearpage
+\section*{Listing --- \texttt{project2\_p2.c} (Problem~2 Part~1)}
+\lstinputlisting[caption={\texttt{project2\_p2.c}}]{project2_p2.c}
+
+\clearpage
+\section*{Listing --- \texttt{project2\_p2\_q3.c} (Problem~2 Q3)}
+\lstinputlisting[caption={\texttt{project2\_p2\_q3.c}}]{project2_p2_q3.c}
+
+\end{document}

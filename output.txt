@@ -1,0 +1,68 @@
+ECE 434 Sp26: I'm group leader arg=1 (PID 23996, PPID 23995), handling A[0..5999] across 2 workers.
+ECE 434 Sp26: I'm group leader arg=2 (PID 23997, PPID 23995), handling A[6000..11999] across 2 workers.
+ECE 434 Sp26: I'm process 23998 with return arg 101 and my parent is 23996.
+ECE 434 Sp26: I am process 23998 with return arg 101. I found the hidden key in position A[44].
+ECE 434 Sp26: I am process 23998 with return arg 101. I found the hidden key in position A[88].
+ECE 434 Sp26: I am process 23998 with return arg 101. I found the hidden key in position A[567].
+ECE 434 Sp26: I am process 23998 with return arg 101. I found the hidden key in position A[618].
+ECE 434 Sp26: I am process 23998 with return arg 101. I found the hidden key in position A[734].
+ECE 434 Sp26: I am process 23998 with return arg 101. I found the hidden key in position A[780].
+ECE 434 Sp26: I am process 23998 with return arg 101. I found the hidden key in position A[1149].
+ECE 434 Sp26: I am process 23998 with return arg 101. I found the hidden key in position A[1243].
+ECE 434 Sp26: I am process 23998 with return arg 101. I found the hidden key in position A[1392].
+ECE 434 Sp26: I am process 23998 with return arg 101. I found the hidden key in position A[1497].
+ECE 434 Sp26: I am process 23998 with return arg 101. I found the hidden key in position A[1845].
+ECE 434 Sp26: I am process 23998 with return arg 101. I found the hidden key in position A[2028].
+ECE 434 Sp26: I am process 23998 with return arg 101. I found the hidden key in position A[2499].
+ECE 434 Sp26: I'm process 24001 with return arg 102 and my parent is 23996.
+ECE 434 Sp26: I am process 24001 with return arg 102. I found the hidden key in position A[3262].
+ECE 434 Sp26: I am process 24001 with return arg 102. I found the hidden key in position A[3317].
+ECE 434 Sp26: I am process 24001 with return arg 102. I found the hidden key in position A[3495].
+ECE 434 Sp26: I am process 24001 with return arg 102. I found the hidden key in position A[3608].
+ECE 434 Sp26: I am process 24001 with return arg 102. I found the hidden key in position A[4349].
+ECE 434 Sp26: I am process 24001 with return arg 102. I found the hidden key in position A[4357].
+ECE 434 Sp26: I am process 24001 with return arg 102. I found the hidden key in position A[4541].
+ECE 434 Sp26: I am process 24001 with return arg 102. I found the hidden key in position A[4693].
+ECE 434 Sp26: I am process 24001 with return arg 102. I found the hidden key in position A[4909].
+ECE 434 Sp26: I am process 24001 with return arg 102. I found the hidden key in position A[5169].
+ECE 434 Sp26: I am process 24001 with return arg 102. I found the hidden key in position A[5368].
+ECE 434 Sp26: I am process 24001 with return arg 102. I found the hidden key in position A[5900].
+ECE 434 Sp26: I am process 23998 with return arg 101. I found the hidden key in position A[2516].
+ECE 434 Sp26: I am process 23998 with return arg 101. I found the hidden key in position A[2575].
+ECE 434 Sp26: I am process 23998 with return arg 101. I found the hidden key in position A[2698].
+ECE 434 Sp26: I am process 23998 with return arg 101. I found the hidden key in position A[2970].
+ECE 434 Sp26: I'm process 24002 with return arg 202 and my parent is 23997.
+ECE 434 Sp26: I am process 24002 with return arg 202. I found the hidden key in position A[9241].
+ECE 434 Sp26: I am process 24002 with return arg 202. I found the hidden key in position A[9764].
+ECE 434 Sp26: I am process 24002 with return arg 202. I found the hidden key in position A[9766].
+ECE 434 Sp26: I am process 24002 with return arg 202. I found the hidden key in position A[9772].
+ECE 434 Sp26: I am process 24002 with return arg 202. I found the hidden key in position A[9915].
+ECE 434 Sp26: I am process 24002 with return arg 202. I found the hidden key in position A[10071].
+ECE 434 Sp26: I am process 24002 with return arg 202. I found the hidden key in position A[10088].
+ECE 434 Sp26: I'm process 23999 with return arg 201 and my parent is 23997.
+ECE 434 Sp26: I am process 23999 with return arg 201. I found the hidden key in position A[6313].
+ECE 434 Sp26: I am process 23999 with return arg 201. I found the hidden key in position A[6378].
+ECE 434 Sp26: I am process 23999 with return arg 201. I found the hidden key in position A[6432].
+ECE 434 Sp26: I am process 23999 with return arg 201. I found the hidden key in position A[6718].
+ECE 434 Sp26: I am process 23999 with return arg 201. I found the hidden key in position A[8281].
+ECE 434 Sp26: I am process 23999 with return arg 201. I found the hidden key in position A[8297].
+ECE 434 Sp26: I am process 24002 with return arg 202. I found the hidden key in position A[10273].
+ECE 434 Sp26: I am process 24002 with return arg 202. I found the hidden key in position A[10511].
+ECE 434 Sp26: I am process 24002 with return arg 202. I found the hidden key in position A[10910].
+ECE 434 Sp26: I am process 24002 with return arg 202. I found the hidden key in position A[11105].
+ECE 434 Sp26: I am process 24002 with return arg 202. I found the hidden key in position A[11197].
+ECE 434 Sp26: I am process 24002 with return arg 202. I found the hidden key in position A[11391].
+ECE 434 Sp26: I am process 24002 with return arg 202. I found the hidden key in position A[11456].
+ECE 434 Sp26: I am process 24002 with return arg 202. I found the hidden key in position A[11506].
+Process 23998 exited normally, exit status = 101
+Process 24001 exited normally, exit status = 102
+Process 23999 exited normally, exit status = 201
+Process 24002 exited normally, exit status = 202
+sh: pstree: command not found
+Process 23996 exited normally, exit status = 1
+Process 23997 exited normally, exit status = 2
+
+===== Final root summary =====
+Max=1000, Avg=499.07 over 12000 elements (L=12000), Total Runtime=0.0126s
+Hidden keys found globally: 50
+Positions: A[44] A[88] A[567] A[618] A[734] A[780] A[1149] A[1243] A[1392] A[1497] A[1845] A[2028] A[2499] A[2516] A[2575] A[2698] A[2970] A[3262] A[3317] A[3495] A[3608] A[4349] A[4357] A[4541] A[4693] A[4909] A[5169] A[5368] A[5900] A[6313] A[6378] A[6432] A[6718] A[8281] A[8297] A[9241] A[9764] A[9766] A[9772] A[9915] A[10071] A[10088] A[10273] A[10511] A[10910] A[11105] A[11197] A[11391] A[11456] A[11506]

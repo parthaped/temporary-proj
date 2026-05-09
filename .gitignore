@@ -1,0 +1,20 @@
+# Built binaries
+datagen
+project1
+project2_p1
+project2_p1_exp2
+project2_p2
+project2_p2_q3
+
+# LaTeX / editor junk
+*.aux
+*.log
+*.out
+*.toc
+*.pdf
+*.synctex.gz
+
+# Runtime traces (regenerate with datagen / runs)
+trace.csv
+
+.DS_Store
