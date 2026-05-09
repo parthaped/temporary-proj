@@ -76,7 +76,10 @@ static void worker_sigint_handler(int sig, siginfo_t *info, void *ctx) {
     int n = snprintf(b, sizeof b,
         "RULE3: worker arg=%d PID=%d PPID=%d caught SIGINT (handler does NOT exit).\n",
         worker_arg_for_handler, getpid(), getppid());
-    write(STDERR_FILENO, b, n);
+    {
+        ssize_t w = write(STDERR_FILENO, b, (size_t)n);
+        (void)w;
+    }
 }
 
 static void worker_sigusr1_handler(int sig, siginfo_t *info, void *ctx) {
@@ -87,7 +90,10 @@ static void worker_sigusr1_handler(int sig, siginfo_t *info, void *ctx) {
     int n = snprintf(b, sizeof b,
         "RULE2: worker arg=%d PID=%d caught SIGUSR1, secret signal = %d. Raising it.\n",
         worker_arg_for_handler, getpid(), secret);
-    write(STDERR_FILENO, b, n);
+    {
+        ssize_t w = write(STDERR_FILENO, b, (size_t)n);
+        (void)w;
+    }
     raise(secret);
 }
 
@@ -350,7 +356,10 @@ int main(int argc, char *argv[]) {
     char cmd[64];
     snprintf(cmd, sizeof cmd, "pstree -p %d", (int)getpid());
     printf("\n[ROOT] pstree right after spawning the tree:\n");
-    system(cmd);
+    {
+        int rc = system(cmd);
+        (void)rc;
+    }
 
     Result rg;
     int g_max = INT_MIN;
@@ -371,7 +380,10 @@ int main(int argc, char *argv[]) {
     }
 
     printf("\n[ROOT] pstree while RULE 1 branches are sleeping:\n");
-    system(cmd);
+    {
+        int rc = system(cmd);
+        (void)rc;
+    }
 
     for (int g = 0; g < GROUPS; g++) {
         int st; waitpid(gpid[g], &st, 0);

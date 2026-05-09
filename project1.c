@@ -245,7 +245,10 @@ int main(int argc, char *argv[]) {
 
     char cmd[64];
     snprintf(cmd, sizeof cmd, "pstree -p %d", (int)getpid());
-    system(cmd);
+    {
+        int rc = system(cmd);
+        (void)rc;
+    }
 
     Result rg;
     int total_count = 0;

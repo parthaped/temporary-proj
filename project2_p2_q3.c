@@ -41,7 +41,10 @@ static void common_handler(int sig, siginfo_t *info, void *ctx) {
     int n = snprintf(buf, sizeof buf,
         "[handler] PID %d got %s(#%d) from sender PID %d\n",
         getpid(), sig_name(sig), sig, info ? info->si_pid : -1);
-    write(STDERR_FILENO, buf, n);
+    {
+        ssize_t w = write(STDERR_FILENO, buf, (size_t)n);
+        (void)w;
+    }
 }
 
 static void install_handlers_for_all9(void) {
@@ -76,7 +79,10 @@ static void print_pending(const char *label) {
     }
     if (!any) off += snprintf(line + off, sizeof line - off, " (empty)");
     off += snprintf(line + off, sizeof line - off, "\n");
-    write(STDERR_FILENO, line, off);
+    {
+        ssize_t w = write(STDERR_FILENO, line, (size_t)off);
+        (void)w;
+    }
 }
 
 static void child_main(int idx) {
@@ -119,7 +125,10 @@ static void child_main(int idx) {
             int n = snprintf(b, sizeof b,
                 "[child %d sigtimedwait] pulled %s from PID %d\n",
                 idx, sig_name(got), info.si_pid);
-            write(STDERR_FILENO, b, n);
+            {
+                ssize_t w = write(STDERR_FILENO, b, (size_t)n);
+                (void)w;
+            }
         }
         if (got < 0 && errno != EAGAIN) perror("sigtimedwait");
     } else if (idx == NCHILD / 2) {
@@ -129,7 +138,10 @@ static void child_main(int idx) {
             char b[160];
             int n = snprintf(b, sizeof b,
                 "[child %d sigwait] received %s\n", idx, sig_name(got));
-            write(STDERR_FILENO, b, n);
+            {
+                ssize_t w = write(STDERR_FILENO, b, (size_t)n);
+                (void)w;
+            }
         }
     }
 

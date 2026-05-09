@@ -49,9 +49,12 @@ static void common_handler(int sig, siginfo_t *info, void *ctx) {
         "[handler] PID %d caught %s (#%d) from sender PID %d (uid %d, code %d)\n",
         getpid(), sig_name(sig), sig,
         info ? info->si_pid : -1,
-        info ? info->si_uid : -1,
+        info ? (int)info->si_uid : -1,
         info ? info->si_code : -1);
-    write(STDERR_FILENO, buf, n);
+    {
+        ssize_t w = write(STDERR_FILENO, buf, (size_t)n);
+        (void)w;
+    }
 }
 
 static void install_child_setup(void) {
